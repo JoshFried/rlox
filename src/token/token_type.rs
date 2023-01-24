@@ -38,11 +38,6 @@ impl<'token> FromStr for TokenType<'token> {
         if let Ok(token_type) = SingleOrDouble::from_str(s) {
             return Ok(TokenType::SingleOrDoubles(token_type));
         }
-
-        if let Ok(token_type) = Literal::from_str(s) {
-            return Ok(TokenType::Literals(token_type));
-        }
-
         if let Ok(token_type) = Keyword::from_str(s) {
             return Ok(TokenType::Keywords(token_type));
         }
@@ -183,14 +178,6 @@ impl FromStr for NumberType {
         }
 
         Ok(NumberType::Integer(s.parse::<i64>().expect("not an int")))
-    }
-}
-
-impl<'literal> FromStr for Literal<'literal> {
-    type Err = ();
-
-    fn from_str(_: &str) -> Result<Self, Self::Err> {
-        unreachable!()
     }
 }
 
