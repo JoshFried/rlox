@@ -2,20 +2,20 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 #[derive(Clone, Copy)]
-pub enum TokenType {
+pub enum TokenType<'token> {
     SingleCharacters(SingleCharacter),
     SingleOrDoubles(SingleOrDouble),
-    Literals(Literal),
+    Literals(Literal<'token>),
     Keywords(Keyword),
 }
 
-impl TokenType {
+impl<'token> TokenType<'token> {
     pub fn is_slash(&self) -> bool {
         matches!(self, TokenType::SingleCharacters(SingleCharacter::Slash))
     }
 }
 
-impl Display for TokenType {
+impl<'token> Display for TokenType<'token> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             TokenType::SingleCharacters(token) => write!(f, "{}", token),
@@ -26,7 +26,7 @@ impl Display for TokenType {
     }
 }
 
-impl FromStr for TokenType {
+impl<'token> FromStr for TokenType<'token> {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -151,30 +151,30 @@ impl Display for SingleOrDouble {
 }
 
 #[derive(Clone, Copy)]
-pub enum Literal {
+pub enum Literal<'literal> {
     Identifier,
-    String,
+    String(&'literal str),
     Number,
 }
 
-impl FromStr for Literal {
+impl<'literal> FromStr for Literal<'literal> {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "identifier" => Ok(Literal::Identifier),
-            "string" => Ok(Literal::String),
+            "string" => Ok(Literal::String("")),
             "number" => Ok(Literal::Number),
             _ => Err(()),
         }
     }
 }
 
-impl Display for Literal {
+impl<'literal> Display for Literal<'literal> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Literal::Identifier => write!(f, "identifier"),
-            Literal::String => write!(f, "string"),
+            Literal::String(s) => write!(f, "{}", s),
             Literal::Number => write!(f, "number"),
         }
     }

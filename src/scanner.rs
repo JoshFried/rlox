@@ -1,3 +1,6 @@
+use crate::errors::Error;
+use crate::errors::ErrorType::ParseError;
+use crate::token::token_type::Literal::String as StringLiteral;
 use crate::token::token_type::TokenType;
 use crate::token::Token;
 use std::str;
@@ -8,6 +11,9 @@ const SLASH: u8 = b'/';
 const WHITE_SPACE: u8 = b' ';
 const CARRIAGE_RETURN: u8 = b'\r';
 const TAB: u8 = b'\t';
+const QUOTE: u8 = b'"';
+
+type Result<T> = std::result::Result<T, Error>;
 
 pub struct Scanner<'scanner> {
     source: &'scanner [u8],
@@ -87,12 +93,38 @@ impl<'scanner> Scanner<'scanner> {
             return Some(());
         }
 
-        // if let Ok(token)
+        if token_as_u8[0] == QUOTE {
+            self.handle_string_literal();
+        }
 
         None
     }
 
-    fn add_token(&mut self, token: TokenType) {
+    fn handle_string_literal(&mut self) -> Result<Option<()>> {
+        while self.peek() != QUOTE && !self.is_end() {
+            if self.peek() == NEW_LINE {
+                self.line += 1;
+            }
+
+            self.advance();
+        }
+
+        if self.is_end() {
+            // TODO: add a logger
+            return Err(Error::from(ParseError(String::from(
+                "error attempting to parse string literal",
+            )))); //todo: this should return Option<Result<()>> for this exact reason
+        }
+
+        self.advance();
+
+        let result = str::from_utf8(&self.source[self.start + 1..self.current - 1]).unwrap();
+        self.add_token(TokenType::Literals(StringLiteral(result)));
+
+        Ok(Some(()))
+    }
+
+    fn add_token(&mut self, token: TokenType<'scanner>) {
         let token = self.build_token(token);
         self.tokens.push(token);
     }
@@ -123,7 +155,7 @@ impl<'scanner> Scanner<'scanner> {
         true
     }
 
-    fn build_token(&self, token: TokenType) -> Token<'scanner> {
+    fn build_token(&self, token: TokenType<'scanner>) -> Token<'scanner> {
         let text = self.get_text();
         Token::new(token, text, None, self.line)
     }

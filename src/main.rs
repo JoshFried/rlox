@@ -1,8 +1,10 @@
+mod errors;
 mod scanner;
 mod token;
 
 extern crate core;
 
+use crate::errors::Error;
 use crate::scanner::Scanner;
 use std::fs::File;
 use std::io;
@@ -11,10 +13,7 @@ use std::path::Path;
 use std::process::exit;
 use std::{env, fs};
 
-type Result<T> = std::result::Result<T, ScannerError>;
-
-#[derive(Debug, Clone)]
-struct ScannerError;
+type Result<T> = std::result::Result<T, Error>;
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();

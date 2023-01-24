@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Copy, Clone)]
 pub struct Token<'token> {
-    token_type: TokenType,
+    token_type: TokenType<'token>,
     lexeme: &'token str,
     literal: Option<&'token str>,
     line: usize,
@@ -19,7 +19,7 @@ impl<'token> Display for Token<'token> {
 
 impl<'token> Token<'token> {
     pub fn new(
-        token_type: TokenType,
+        token_type: TokenType<'token>,
         lexeme: &'token str,
         literal: Option<&'token str>,
         line: usize,
