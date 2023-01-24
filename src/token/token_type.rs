@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::str;
 use std::str::FromStr;
 
 #[derive(Clone, Copy)]
@@ -163,16 +164,33 @@ pub enum NumberType {
     Float(f64),
 }
 
+impl Display for NumberType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NumberType::Float(float) => write!(f, "{}", float),
+            NumberType::Integer(int) => write!(f, "{}", int),
+        }
+    }
+}
+
+impl FromStr for NumberType {
+    type Err = ();
+
+    // todo: improve error handling
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.contains('.') {
+            return Ok(NumberType::Float(s.parse::<f64>().expect("not a float")));
+        }
+
+        Ok(NumberType::Integer(s.parse::<i64>().expect("not an int")))
+    }
+}
+
 impl<'literal> FromStr for Literal<'literal> {
     type Err = ();
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "identifier" => Ok(Literal::Identifier),
-            "string" => Ok(Literal::String("")),
-            "number" => Ok(Literal::Number),
-            _ => Err(()),
-        }
+    fn from_str(_: &str) -> Result<Self, Self::Err> {
+        unreachable!()
     }
 }
 
@@ -181,7 +199,7 @@ impl<'literal> Display for Literal<'literal> {
         match self {
             Literal::Identifier => write!(f, "identifier"),
             Literal::String(s) => write!(f, "{}", s),
-            Literal::Number => write!(f, "number"),
+            Literal::Number(num) => write!(f, "{}", num),
         }
     }
 }

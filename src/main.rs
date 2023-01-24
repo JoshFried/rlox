@@ -2,9 +2,6 @@ mod errors;
 mod scanner;
 mod token;
 
-extern crate core;
-extern crate core;
-
 use crate::errors::Error;
 use crate::scanner::Scanner;
 use std::fmt::format;

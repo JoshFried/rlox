@@ -1,8 +1,9 @@
 use crate::errors::Error;
 use crate::errors::ErrorType::Parse;
-use crate::token::token_type::Literal::{Number, String as StringLiteral};
-use crate::token::token_type::{NumberType, TokenType};
+use crate::token::token_type::Literal::{Identifier, Number, String as StringLiteral};
+use crate::token::token_type::{Keyword, NumberType, TokenType};
 use crate::token::Token;
+use phf::phf_map;
 use std::str;
 use std::str::FromStr;
 
@@ -13,6 +14,25 @@ const CARRIAGE_RETURN: u8 = b'\r';
 const TAB: u8 = b'\t';
 const QUOTE: u8 = b'"';
 const PERIOD: u8 = b'.';
+
+const IDENTIFIER_MAPPING: phf::Map<&'static str, Keyword> = phf_map! {
+    "and" =>Keyword::And,
+    "class"=> Keyword::Class,
+    "else"=> Keyword::Else,
+    "false"=> Keyword::False,
+    "for"=> Keyword::For,
+    "fun"=> Keyword::Fun,
+    "if"=> Keyword::If,
+    "nil"=> Keyword::Nil,
+    "or"=> Keyword::Or,
+    "print"=> Keyword::Print,
+    "return"=> Keyword::Return,
+    "super"=> Keyword::Super,
+    "this"=> Keyword::This,
+    "true"=> Keyword::True,
+    "var"=> Keyword::Var,
+    "while"=> Keyword::While
+};
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -108,6 +128,13 @@ impl<'scanner> Scanner<'scanner> {
             };
         }
 
+        if token_as_u8[0].is_ascii_alphabetic() {
+            match self.handle_identifier_literal() {
+                Ok(..) => Some(()),
+                Err(..) => None,
+            };
+        }
+
         None
     }
 
@@ -174,6 +201,7 @@ impl<'scanner> Scanner<'scanner> {
     fn get_text(&self) -> &'scanner str {
         str::from_utf8(&self.source[self.start..self.current]).unwrap()
     }
+
     fn handle_number_literal(&mut self) -> Result<Option<()>> {
         while self.peek().is_ascii_digit() {
             self.advance();
@@ -205,6 +233,22 @@ impl<'scanner> Scanner<'scanner> {
             true => b'\0',
             false => self.source[self.current + 1],
         }
+    }
+
+    fn handle_identifier_literal(&mut self) -> Result<Option<()>> {
+        while self.peek().is_ascii_alphanumeric() {
+            self.advance();
+        }
+
+        let word = self.get_text();
+        let token_type = match IDENTIFIER_MAPPING.get(word) {
+            None => TokenType::Literals(Identifier),
+            Some(keyword) => TokenType::Keywords(*keyword),
+        };
+
+        self.add_token(token_type);
+
+        Ok(Some(()))
     }
 }
 
