@@ -1,25 +1,57 @@
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
-#[derive(Display)]
-pub(crate) enum TokenType {
-    SingleCharacter(SingleCharacterToken),
-    SingleOrDouble(SingleOrDoubleCharacterToken),
-    Literals(Literals),
-    Keywords(Keywords),
+#[derive(Clone, Copy)]
+pub enum TokenType {
+    SingleCharacters(SingleCharacter),
+    SingleOrDoubles(SingleOrDouble),
+    Literals(Literal),
+    Keywords(Keyword),
+}
+
+impl TokenType {
+    pub fn is_slash(&self) -> bool {
+        matches!(self, TokenType::SingleCharacters(SingleCharacter::Slash))
+    }
 }
 
 impl Display for TokenType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            TokenType::SingleCharacter(token) => write!(f, token),
-            TokenType::SingleOrDouble(token) => write!(f, token),
-            TokenType::Literals(token) => write!(f, token),
-            TokenType::Keywords(token) => write!(f, token),
+            TokenType::SingleCharacters(token) => write!(f, "{}", token),
+            TokenType::SingleOrDoubles(token) => write!(f, "{}", token),
+            TokenType::Literals(token) => write!(f, "{}", token),
+            TokenType::Keywords(token) => write!(f, "{}", token),
         }
     }
 }
 
-enum SingleCharacterToken {
+impl FromStr for TokenType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Ok(token_type) = SingleCharacter::from_str(s) {
+            return Ok(TokenType::SingleCharacters(token_type));
+        }
+
+        if let Ok(token_type) = SingleOrDouble::from_str(s) {
+            return Ok(TokenType::SingleOrDoubles(token_type));
+        }
+
+        if let Ok(token_type) = Literal::from_str(s) {
+            return Ok(TokenType::Literals(token_type));
+        }
+
+        if let Ok(token_type) = Keyword::from_str(s) {
+            return Ok(TokenType::Keywords(token_type));
+        }
+
+        Err(())
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum SingleCharacter {
     LeftParen,
     RightParen,
     LeftBrace,
@@ -34,25 +66,47 @@ enum SingleCharacterToken {
     Star,
 }
 
-impl Display for SingleCharacterToken {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SingleCharacterToken::LeftParen => write!(f, "("),
-            SingleCharacterToken::RightParen => write!(f, ")"),
-            SingleCharacterToken::LeftBrace => write!(f, '{'),
-            SingleCharacterToken::RightBrace => write!(f, '}'),
-            SingleCharacterToken::Comma => write!(f, ","),
-            SingleCharacterToken::Dot => write!(f, "."),
-            SingleCharacterToken::Minus => write!(f, "-"),
-            SingleCharacterToken::Plus => write!(f, "+"),
-            SingleCharacterToken::Semicolon => write!(f, ";"),
-            SingleCharacterToken::Slash => write!(f, "/"),
-            SingleCharacterToken::Star => write!(f, "*"),
+impl FromStr for SingleCharacter {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "(" => Ok(SingleCharacter::LeftParen),
+            ")" => Ok(SingleCharacter::RightParen),
+            "{" => Ok(SingleCharacter::LeftBrace),
+            "}" => Ok(SingleCharacter::RightBrace),
+            "," => Ok(SingleCharacter::Comma),
+            "." => Ok(SingleCharacter::Dot),
+            "-" => Ok(SingleCharacter::Minus),
+            "+" => Ok(SingleCharacter::Plus),
+            ";" => Ok(SingleCharacter::Semicolon),
+            "/" => Ok(SingleCharacter::Slash),
+            "*" => Ok(SingleCharacter::Star),
+            _ => Err(()),
         }
     }
 }
 
-enum SingleOrDoubleCharacterToken {
+impl Display for SingleCharacter {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SingleCharacter::LeftParen => write!(f, "("),
+            SingleCharacter::RightParen => write!(f, ")"),
+            SingleCharacter::LeftBrace => write!(f, r#"{{"#), // todo: verify this works
+            SingleCharacter::RightBrace => write!(f, r#"}}"#), // same
+            SingleCharacter::Comma => write!(f, ","),
+            SingleCharacter::Dot => write!(f, "."),
+            SingleCharacter::Minus => write!(f, "-"),
+            SingleCharacter::Plus => write!(f, "+"),
+            SingleCharacter::Semicolon => write!(f, ";"),
+            SingleCharacter::Slash => write!(f, "/"),
+            SingleCharacter::Star => write!(f, "*"),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum SingleOrDouble {
     Bang,
     BangEqual,
     Equal,
@@ -63,38 +117,71 @@ enum SingleOrDoubleCharacterToken {
     LessEqual,
 }
 
-impl Display for SingleOrDoubleCharacterToken {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SingleOrDoubleCharacterToken::Bang => write!(f, "!"),
-            SingleOrDoubleCharacterToken::BangEqual => write!(f, "!="),
-            SingleOrDoubleCharacterToken::Equal => write!(f, "="),
-            SingleOrDoubleCharacterToken::EqualEqual => write!(f, "=="),
-            SingleOrDoubleCharacterToken::Greater => write!(f, ">"),
-            SingleOrDoubleCharacterToken::GreaterEqual => write!(f, ">="),
-            SingleOrDoubleCharacterToken::Less => write!(f, "<"),
-            SingleOrDoubleCharacterToken::LessEqual => write!(f, "<="),
+impl FromStr for SingleOrDouble {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "!" => Ok(SingleOrDouble::Bang),
+            "!=" => Ok(SingleOrDouble::BangEqual),
+            "=" => Ok(SingleOrDouble::Equal),
+            "==" => Ok(SingleOrDouble::EqualEqual),
+            ">" => Ok(SingleOrDouble::Greater),
+            ">=" => Ok(SingleOrDouble::GreaterEqual),
+            "<" => Ok(SingleOrDouble::Less),
+            "<=" => Ok(SingleOrDouble::LessEqual),
+            _ => Err(()),
         }
     }
 }
 
-enum Literals {
+impl Display for SingleOrDouble {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SingleOrDouble::Bang => write!(f, "!"),
+            SingleOrDouble::BangEqual => write!(f, "!="),
+            SingleOrDouble::Equal => write!(f, "="),
+            SingleOrDouble::EqualEqual => write!(f, "=="),
+            SingleOrDouble::Greater => write!(f, ">"),
+            SingleOrDouble::GreaterEqual => write!(f, ">="),
+            SingleOrDouble::Less => write!(f, "<"),
+            SingleOrDouble::LessEqual => write!(f, "<="),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Literal {
     Identifier,
     String,
     Number,
 }
 
-impl Display for Literals {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Literals::Identifier => write!(f, "identifier"),
-            Literals::String => write!(f, "string"),
-            Literals::Number => write!(f, "number"),
+impl FromStr for Literal {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "identifier" => Ok(Literal::Identifier),
+            "string" => Ok(Literal::String),
+            "number" => Ok(Literal::Number),
+            _ => Err(()),
         }
     }
 }
 
-enum Keywords {
+impl Display for Literal {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Literal::Identifier => write!(f, "identifier"),
+            Literal::String => write!(f, "string"),
+            Literal::Number => write!(f, "number"),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Keyword {
     And,
     Class,
     Else,
@@ -114,26 +201,53 @@ enum Keywords {
     Eof,
 }
 
-impl Display for Keywords {
+impl FromStr for Keyword {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "and" => Ok(Keyword::And),
+            "class" => Ok(Keyword::Class),
+            "else" => Ok(Keyword::Else),
+            "false" => Ok(Keyword::False),
+            "fun" => Ok(Keyword::Fun),
+            "for" => Ok(Keyword::For),
+            "if" => Ok(Keyword::If),
+            "nil" => Ok(Keyword::Nil),
+            "or" => Ok(Keyword::Or),
+            "print" => Ok(Keyword::Print),
+            "return" => Ok(Keyword::Return),
+            "super" => Ok(Keyword::Super),
+            "this" => Ok(Keyword::This),
+            "true" => Ok(Keyword::True),
+            "var" => Ok(Keyword::Var),
+            "while" => Ok(Keyword::While),
+            "eof" => Ok(Keyword::Eof),
+            _ => Err(()),
+        }
+    }
+}
+
+impl Display for Keyword {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match Self {
-            Keywords::And => write!(f, "and"),
-            Keywords::Class => write!(f, "class"),
-            Keywords::Else => write!(f, "else"),
-            Keywords::False => write!(f, "false"),
-            Keywords::Fun => write!(f, "fun"),
-            Keywords::For => write!(f, "for"),
-            Keywords::If => write!(f, "if"),
-            Keywords::Nil => write!(f, "nil"),
-            Keywords::Or => write!(f, "or"),
-            Keywords::Print => write!(f, "print"),
-            Keywords::Return => write!(f, "return"),
-            Keywords::Super => write!(f, "super"),
-            Keywords::This => write!(f, "this"),
-            Keywords::True => write!(f, "true"),
-            Keywords::Var => write!(f, "var"),
-            Keywords::While => write!(f, "while"),
-            Keywords::Eof => write!(f, "eof"),
+        match self {
+            Keyword::And => write!(f, "and"),
+            Keyword::Class => write!(f, "class"),
+            Keyword::Else => write!(f, "else"),
+            Keyword::False => write!(f, "false"),
+            Keyword::Fun => write!(f, "fun"),
+            Keyword::For => write!(f, "for"),
+            Keyword::If => write!(f, "if"),
+            Keyword::Nil => write!(f, "nil"),
+            Keyword::Or => write!(f, "or"),
+            Keyword::Print => write!(f, "print"),
+            Keyword::Return => write!(f, "return"),
+            Keyword::Super => write!(f, "super"),
+            Keyword::This => write!(f, "this"),
+            Keyword::True => write!(f, "true"),
+            Keyword::Var => write!(f, "var"),
+            Keyword::While => write!(f, "while"),
+            Keyword::Eof => write!(f, "eof"),
         }
     }
 }

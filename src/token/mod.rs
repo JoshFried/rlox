@@ -1,26 +1,29 @@
-mod token_type;
+pub mod token_type;
 
 use crate::token::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
-pub struct Token<'token, T>
-where
-    T: Display,
-{
+#[derive(Copy, Clone)]
+pub struct Token<'token> {
     token_type: TokenType,
     lexeme: &'token str,
-    literal: T,
+    literal: Option<&'token str>,
     line: usize,
 }
 
-impl<'token, T> Display for Token<'token, T> {
+impl<'token> Display for Token<'token> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {} {}", self.token_type, self.lexeme, self.line)
     }
 }
 
-impl<'token, T> Token<'token, T> {
-    pub fn new(token_type: TokenType, lexeme: &'token str, literal: T, line: usize) -> Self {
+impl<'token> Token<'token> {
+    pub fn new(
+        token_type: TokenType,
+        lexeme: &'token str,
+        literal: Option<&'token str>,
+        line: usize,
+    ) -> Self {
         Self {
             token_type,
             lexeme,
