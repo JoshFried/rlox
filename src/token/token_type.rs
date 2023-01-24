@@ -154,7 +154,13 @@ impl Display for SingleOrDouble {
 pub enum Literal<'literal> {
     Identifier,
     String(&'literal str),
-    Number,
+    Number(NumberType),
+}
+
+#[derive(Clone, Copy)]
+pub enum NumberType {
+    Integer(i64),
+    Float(f64),
 }
 
 impl<'literal> FromStr for Literal<'literal> {

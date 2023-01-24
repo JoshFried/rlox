@@ -3,9 +3,11 @@ mod scanner;
 mod token;
 
 extern crate core;
+extern crate core;
 
 use crate::errors::Error;
 use crate::scanner::Scanner;
+use std::fmt::format;
 use std::fs::File;
 use std::io;
 use std::io::Read;
@@ -46,7 +48,7 @@ fn run(line: &str) -> Result<()> {
 
     let tokens = scanner.scan_tokens();
 
-    for token in &tokens.to_vec() {
+    for token in tokens {
         println!("{}", token);
     }
 

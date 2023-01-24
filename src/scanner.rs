@@ -1,7 +1,7 @@
 use crate::errors::Error;
-use crate::errors::ErrorType::ParseError;
-use crate::token::token_type::Literal::String as StringLiteral;
-use crate::token::token_type::TokenType;
+use crate::errors::ErrorType::Parse;
+use crate::token::token_type::Literal::{Number, String as StringLiteral};
+use crate::token::token_type::{NumberType, TokenType};
 use crate::token::Token;
 use std::str;
 use std::str::FromStr;
@@ -12,6 +12,7 @@ const WHITE_SPACE: u8 = b' ';
 const CARRIAGE_RETURN: u8 = b'\r';
 const TAB: u8 = b'\t';
 const QUOTE: u8 = b'"';
+const PERIOD: u8 = b'.';
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -94,7 +95,17 @@ impl<'scanner> Scanner<'scanner> {
         }
 
         if token_as_u8[0] == QUOTE {
-            self.handle_string_literal();
+            return match self.handle_string_literal() {
+                Ok(..) => Some(()),
+                Err(..) => None,
+            };
+        }
+
+        if token_as_u8[0].is_ascii_digit() {
+            return match self.handle_number_literal() {
+                Ok(..) => Some(()),
+                Err(..) => None,
+            };
         }
 
         None
@@ -111,7 +122,7 @@ impl<'scanner> Scanner<'scanner> {
 
         if self.is_end() {
             // TODO: add a logger
-            return Err(Error::from(ParseError(String::from(
+            return Err(Error::from(Parse(String::from(
                 "error attempting to parse string literal",
             )))); //todo: this should return Option<Result<()>> for this exact reason
         }
@@ -162,6 +173,38 @@ impl<'scanner> Scanner<'scanner> {
 
     fn get_text(&self) -> &'scanner str {
         str::from_utf8(&self.source[self.start..self.current]).unwrap()
+    }
+    fn handle_number_literal(&mut self) -> Result<Option<()>> {
+        while self.peek().is_ascii_digit() {
+            self.advance();
+        }
+
+        if self.peek() == PERIOD && self.peek_next().is_ascii_digit() {
+            self.advance();
+
+            while self.peek().is_ascii_digit() {
+                self.advance();
+            }
+        }
+
+        let result = str::from_utf8(&self.source[self.start + 1..self.current - 1]).unwrap();
+        let token = match result.parse::<i64>() {
+            Ok(number) => TokenType::Literals(Number(NumberType::Integer(number))),
+            Err(..) => {
+                TokenType::Literals(Number(NumberType::Float(result.parse::<f64>().unwrap())))
+            }
+        };
+
+        self.add_token(token);
+
+        Ok(Some(()))
+    }
+
+    fn peek_next(&self) -> u8 {
+        match self.current + 1 >= self.source.len() {
+            true => b'\0',
+            false => self.source[self.current + 1],
+        }
     }
 }
 

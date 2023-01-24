@@ -8,11 +8,11 @@ pub struct Error(#[from] ErrorType);
 #[derive(Error, Debug)]
 pub enum ErrorType {
     #[error("Parsing error `{0}`")]
-    ParseError(String),
+    Parse(String),
     #[error("Interpreter error")]
-    InterpreterError(String),
+    Interpreter(String),
     #[error("Token error")]
-    TokenError(String),
+    Token(String),
     #[error("io")]
-    IoError(#[from] io::Error),
+    Io(#[from] io::Error),
 }
