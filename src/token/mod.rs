@@ -31,4 +31,9 @@ impl<'token> Token<'token> {
             line,
         }
     }
+
+    // todo: i think theres a more idiomatic way to go about this
+    pub fn build_string(&self) -> String {
+        self.token_type.build_string()
+    }
 }

@@ -17,72 +17,72 @@ pub enum Expr<'expr> {
 
 #[derive(Clone, Debug)]
 pub struct Assign<'expr> {
-    name: Token<'expr>,
-    value: Box<Expr<'expr>>,
+    pub name: Token<'expr>,
+    pub value: Box<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Binary<'expr> {
-    left: Box<Expr<'expr>>,
-    operator: Token<'expr>,
-    right: Box<Expr<'expr>>,
+    pub left: Box<Expr<'expr>>,
+    pub operator: Token<'expr>,
+    pub right: Box<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Call<'expr> {
-    callee: Box<Expr<'expr>>,
-    parenthesis: Token<'expr>,
-    arguments: Vec<Token<'expr>>,
+    pub callee: Box<Expr<'expr>>,
+    pub parenthesis: Token<'expr>,
+    pub arguments: Vec<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Get<'expr> {
-    object: Box<Expr<'expr>>,
-    name: Token<'expr>,
+    pub object: Box<Expr<'expr>>,
+    pub name: Token<'expr>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Grouping<'expr> {
-    expression: Box<Expr<'expr>>,
+    pub expression: Box<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Literal<'expr> {
-    value: token_type::Literal<'expr>,
+    pub value: token_type::Literal<'expr>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Logical<'expr> {
-    left: Box<Expr<'expr>>,
-    operator: Token<'expr>,
-    right: Box<Expr<'expr>>,
+    pub left: Box<Expr<'expr>>,
+    pub operator: Token<'expr>,
+    pub right: Box<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Set<'expr> {
-    object: Box<Expr<'expr>>,
-    name: Token<'expr>,
-    value: Box<Expr<'expr>>,
+    pub object: Box<Expr<'expr>>,
+    pub name: Token<'expr>,
+    pub value: Box<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Super<'expr> {
-    keyword: Token<'expr>,
-    method: Token<'expr>,
+    pub keyword: Token<'expr>,
+    pub method: Token<'expr>,
 }
 
 #[derive(Clone, Debug)]
 pub struct This<'expr> {
-    keyword: Token<'expr>,
+    pub keyword: Token<'expr>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Unary<'expr> {
-    operator: Token<'expr>,
-    right: Box<Expr<'expr>>,
+    pub operator: Token<'expr>,
+    pub right: Box<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Variable<'expr> {
-    name: Token<'expr>,
+    pub name: Token<'expr>,
 }

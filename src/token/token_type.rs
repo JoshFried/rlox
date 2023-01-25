@@ -11,6 +11,17 @@ pub enum TokenType<'token> {
 }
 
 impl<'token> TokenType<'token> {
+    pub fn build_string(&self) -> String {
+        match self {
+            TokenType::SingleCharacters(token) => token.build_string(),
+            TokenType::SingleOrDoubles(token) => token.build_string(),
+            TokenType::Literals(token) => token.build_string(),
+            TokenType::Keywords(token) => token.build_string(),
+        }
+    }
+}
+
+impl<'token> TokenType<'token> {
     pub fn is_slash(&self) -> bool {
         matches!(self, TokenType::SingleCharacters(SingleCharacter::Slash))
     }
@@ -60,6 +71,24 @@ pub enum SingleCharacter {
     Semicolon,
     Slash,
     Star,
+}
+
+impl SingleCharacter {
+    fn build_string(&self) -> String {
+        match self {
+            SingleCharacter::LeftParen => "(".to_string(),
+            SingleCharacter::RightParen => ")".to_string(),
+            SingleCharacter::LeftBrace => "{".to_string(),
+            SingleCharacter::RightBrace => "}".to_string(),
+            SingleCharacter::Comma => ",".to_string(),
+            SingleCharacter::Dot => ".".to_string(),
+            SingleCharacter::Minus => "-".to_string(),
+            SingleCharacter::Plus => "+".to_string(),
+            SingleCharacter::Semicolon => ";".to_string(),
+            SingleCharacter::Slash => "/".to_string(),
+            SingleCharacter::Star => "*".to_string(),
+        }
+    }
 }
 
 impl FromStr for SingleCharacter {
@@ -113,6 +142,21 @@ pub enum SingleOrDouble {
     LessEqual,
 }
 
+impl SingleOrDouble {
+    pub fn build_string(&self) -> String {
+        match self {
+            SingleOrDouble::Bang => "!".to_string(),
+            SingleOrDouble::BangEqual => "!=".to_string(),
+            SingleOrDouble::Equal => "=".to_string(),
+            SingleOrDouble::EqualEqual => "==".to_string(),
+            SingleOrDouble::Greater => ">".to_string(),
+            SingleOrDouble::GreaterEqual => ">=".to_string(),
+            SingleOrDouble::Less => "<".to_string(),
+            SingleOrDouble::LessEqual => "<=".to_string(),
+        }
+    }
+}
+
 impl FromStr for SingleOrDouble {
     type Err = ();
 
@@ -153,6 +197,16 @@ pub enum Literal<'literal> {
     Number(NumberType),
 }
 
+impl<'literal> Literal<'literal> {
+    pub fn build_string(&self) -> String {
+        match self {
+            Literal::Identifier => "identifier".to_string(), // FIXME
+            Literal::String(str) => str.to_string(),
+            Literal::Number(num) => num.build_string(),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub enum NumberType {
     Integer(i64),
@@ -164,6 +218,15 @@ impl Display for NumberType {
         match self {
             NumberType::Float(float) => write!(f, "{}", float),
             NumberType::Integer(int) => write!(f, "{}", int),
+        }
+    }
+}
+
+impl NumberType {
+    pub fn build_string(&self) -> String {
+        match self {
+            NumberType::Integer(int) => int.to_string(),
+            NumberType::Float(float) => float.to_string(),
         }
     }
 }
@@ -210,6 +273,30 @@ pub enum Keyword {
     Var,
     While,
     Eof,
+}
+
+impl Keyword {
+    pub fn build_string(&self) -> String {
+        match self {
+            Keyword::And => "and".to_string(),
+            Keyword::Class => "class".to_string(),
+            Keyword::Else => "else".to_string(),
+            Keyword::False => "false".to_string(),
+            Keyword::Fun => "fun".to_string(),
+            Keyword::For => "for".to_string(),
+            Keyword::If => "if".to_string(),
+            Keyword::Nil => "nil".to_string(),
+            Keyword::Or => "or".to_string(),
+            Keyword::Print => "print".to_string(),
+            Keyword::Return => "return".to_string(),
+            Keyword::Super => "super".to_string(),
+            Keyword::This => "this".to_string(),
+            Keyword::True => "true".to_string(),
+            Keyword::Var => "var".to_string(),
+            Keyword::While => "while".to_string(),
+            Keyword::Eof => "eof".to_string(),
+        }
+    }
 }
 
 impl FromStr for Keyword {

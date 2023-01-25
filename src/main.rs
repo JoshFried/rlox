@@ -1,11 +1,16 @@
 mod errors;
 mod expr;
+mod pretty_printer;
 mod scanner;
 mod token;
 
 use crate::errors::Error;
+use crate::expr::{Binary, Expr, Literal, Unary};
+use crate::pretty_printer::PrettyPrinter;
 use crate::scanner::Scanner;
-use std::fmt::format;
+use crate::token::token_type::NumberType::{Float, Integer};
+use crate::token::token_type::{SingleCharacter, TokenType};
+use crate::token::{token_type, Token};
 use std::fs::File;
 use std::io;
 use std::io::Read;
@@ -18,8 +23,36 @@ type Result<T> = std::result::Result<T, Error>;
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
 
+    let expression = Expr::Binary(Binary {
+        left: Box::new(Expr::Unary(Unary {
+            operator: Token::new(
+                TokenType::SingleCharacters(SingleCharacter::Minus),
+                "-",
+                None,
+                1,
+            ),
+            right: Box::new(Expr::Literal(Literal {
+                value: token_type::Literal::Number(Integer(123)),
+            })),
+        })),
+        operator: Token::new(
+            TokenType::SingleCharacters(SingleCharacter::Star),
+            "*",
+            None,
+            1,
+        ),
+        right: Box::new(Expr::Grouping(expr::Grouping {
+            expression: Box::new(Expr::Literal(Literal {
+                value: token_type::Literal::Number(Float(45.67)),
+            })),
+        })),
+    });
+
+    let printer = PrettyPrinter::new();
+    printer.print_expr(&expression);
+
     let x = match args.len() {
-        2 => runFile(&args[1]),
+        2 => run_file(&args[1]),
         1 => runPrompt(),
         _ => panic!("fucked up"),
     }?;
@@ -53,7 +86,7 @@ fn run(line: &str) -> Result<()> {
     Ok(())
 }
 
-fn runFile(file_path: &str) -> Result<i32> {
+fn run_file(file_path: &str) -> Result<i32> {
     if !Path::new(file_path).exists() {
         return Ok(-1);
     }
@@ -83,8 +116,5 @@ fn error(line: usize, message: &str) {
 }
 
 fn report(line: usize, where_err: &str, message: &str) {
-    println!(
-        "{}",
-        format!("[line {} ] Error {}: {}", line, where_err, message)
-    )
+    println!("[Line {} ] Error {}: {}", line, where_err, message)
 }
