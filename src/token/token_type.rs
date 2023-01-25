@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::str;
 use std::str::FromStr;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum TokenType<'token> {
     SingleCharacters(SingleCharacter),
     SingleOrDoubles(SingleOrDouble),
@@ -46,7 +46,7 @@ impl<'token> FromStr for TokenType<'token> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum SingleCharacter {
     LeftParen,
     RightParen,
@@ -101,7 +101,7 @@ impl Display for SingleCharacter {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum SingleOrDouble {
     Bang,
     BangEqual,
@@ -146,14 +146,14 @@ impl Display for SingleOrDouble {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Literal<'literal> {
     Identifier,
     String(&'literal str),
     Number(NumberType),
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum NumberType {
     Integer(i64),
     Float(f64),
@@ -191,7 +191,7 @@ impl<'literal> Display for Literal<'literal> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Keyword {
     And,
     Class,

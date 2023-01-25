@@ -3,7 +3,7 @@ pub mod token_type;
 use crate::token::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Token<'token> {
     token_type: TokenType<'token>,
     lexeme: &'token str,
