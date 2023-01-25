@@ -3,7 +3,6 @@ use crate::errors::ErrorType::Parse;
 use crate::token::token_type::Literal::{Identifier, Number, String as StringLiteral};
 use crate::token::token_type::{Keyword, NumberType, TokenType};
 use crate::token::Token;
-use phf::phf_map;
 use std::str;
 use std::str::FromStr;
 
@@ -14,25 +13,6 @@ const CARRIAGE_RETURN: u8 = b'\r';
 const TAB: u8 = b'\t';
 const QUOTE: u8 = b'"';
 const PERIOD: u8 = b'.';
-
-const IDENTIFIER_MAPPING: phf::Map<&'static str, Keyword> = phf_map! {
-    "and" =>Keyword::And,
-    "class"=> Keyword::Class,
-    "else"=> Keyword::Else,
-    "false"=> Keyword::False,
-    "for"=> Keyword::For,
-    "fun"=> Keyword::Fun,
-    "if"=> Keyword::If,
-    "nil"=> Keyword::Nil,
-    "or"=> Keyword::Or,
-    "print"=> Keyword::Print,
-    "return"=> Keyword::Return,
-    "super"=> Keyword::Super,
-    "this"=> Keyword::This,
-    "true"=> Keyword::True,
-    "var"=> Keyword::Var,
-    "while"=> Keyword::While
-};
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -241,12 +221,11 @@ impl<'scanner> Scanner<'scanner> {
         }
 
         let word = self.get_text();
-        let token_type = match IDENTIFIER_MAPPING.get(word) {
-            None => TokenType::Literals(Identifier),
-            Some(keyword) => TokenType::Keywords(*keyword),
-        };
 
-        self.add_token(token_type);
+        match Keyword::from_str(word) {
+            Ok(keyword) => self.add_token(TokenType::Keywords(keyword)),
+            Err(..) => self.add_token(TokenType::Literals(Identifier)),
+        }
 
         Ok(Some(()))
     }

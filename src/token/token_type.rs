@@ -88,8 +88,8 @@ impl Display for SingleCharacter {
         match self {
             SingleCharacter::LeftParen => write!(f, "("),
             SingleCharacter::RightParen => write!(f, ")"),
-            SingleCharacter::LeftBrace => write!(f, r#"{{"#), // todo: verify this works
-            SingleCharacter::RightBrace => write!(f, r#"}}"#), // same
+            SingleCharacter::LeftBrace => write!(f, r#"{{"#),
+            SingleCharacter::RightBrace => write!(f, r#"}}"#),
             SingleCharacter::Comma => write!(f, ","),
             SingleCharacter::Dot => write!(f, "."),
             SingleCharacter::Minus => write!(f, "-"),
