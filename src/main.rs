@@ -1,22 +1,20 @@
 mod errors;
 mod expr;
-mod pretty_printer;
 mod scanner;
-mod token;
 
-use crate::errors::Error;
-use crate::expr::{Binary, Expr, Literal, Unary};
-use crate::pretty_printer::PrettyPrinter;
-use crate::scanner::Scanner;
-use crate::token::token_type::NumberType::{Float, Integer};
-use crate::token::token_type::{SingleCharacter, TokenType};
-use crate::token::{token_type, Token};
+use errors::Error;
+use expr::{Binary, Expr, Literal, Unary};
+use scanner::pretty_printer::PrettyPrinter;
+use scanner::token_type::NumberType::{Float, Integer};
+use scanner::token_type::{SingleCharacter, TokenType};
+use scanner::{token, token_type, Scanner};
 use std::fs::File;
 use std::io;
 use std::io::Read;
 use std::path::Path;
 use std::process::exit;
 use std::{env, fs};
+use token::Token;
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -53,14 +51,14 @@ fn main() -> Result<()> {
 
     let x = match args.len() {
         2 => run_file(&args[1]),
-        1 => runPrompt(),
+        1 => run_prompt(),
         _ => panic!("fucked up"),
     }?;
 
     exit(x);
 }
 
-fn runPrompt() -> Result<i32> {
+fn run_prompt() -> Result<i32> {
     loop {
         println!(">");
         let mut line = String::new();
@@ -70,8 +68,6 @@ fn runPrompt() -> Result<i32> {
 
         run(&line)?;
     }
-
-    Ok(0)
 }
 
 fn run(line: &str) -> Result<()> {

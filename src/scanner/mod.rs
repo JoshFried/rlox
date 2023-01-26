@@ -1,10 +1,14 @@
 use crate::errors::Error;
 use crate::errors::ErrorType::Parse;
-use crate::token::token_type::Literal::{Identifier, Number, String as StringLiteral};
-use crate::token::token_type::{Keyword, NumberType, TokenType};
-use crate::token::Token;
-use std::str;
+use crate::scanner::token::Token;
+use crate::scanner::token_type::Literal::{Identifier, Number, String as StringLiteral};
+use crate::scanner::token_type::{Keyword, NumberType, TokenType};
+pub use std::str;
 use std::str::FromStr;
+
+pub mod pretty_printer;
+pub mod token;
+pub mod token_type;
 
 const NEW_LINE: u8 = b'\n';
 const SLASH: u8 = b'/';

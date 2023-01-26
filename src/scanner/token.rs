@@ -1,6 +1,4 @@
-pub mod token_type;
-
-use crate::token::token_type::TokenType;
+use crate::scanner::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
 #[derive(Copy, Clone, Debug)]
