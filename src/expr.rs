@@ -1,4 +1,5 @@
-use crate::token::{token_type, Token};
+use crate::scanner::token::Token;
+use crate::scanner::token_type;
 
 #[derive(Clone, Debug)]
 pub enum Expr<'expr> {

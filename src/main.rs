@@ -1,13 +1,15 @@
 mod errors;
 mod expr;
+mod parser;
 mod scanner;
 
 use errors::Error;
 use expr::{Binary, Expr, Literal, Unary};
 use scanner::pretty_printer::PrettyPrinter;
+use scanner::scanner::Scanner;
 use scanner::token_type::NumberType::{Float, Integer};
 use scanner::token_type::{SingleCharacter, TokenType};
-use scanner::{token, token_type, Scanner};
+use scanner::{token, token_type};
 use std::fs::File;
 use std::io;
 use std::io::Read;

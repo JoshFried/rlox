@@ -1,7 +1,7 @@
 use crate::scanner::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Token<'token> {
     token_type: TokenType<'token>,
     lexeme: &'token str,
@@ -28,6 +28,10 @@ impl<'token> Token<'token> {
             literal,
             line,
         }
+    }
+
+    pub fn get_type(&self) -> &TokenType {
+        &self.token_type
     }
 
     // todo: i think theres a more idiomatic way to go about this

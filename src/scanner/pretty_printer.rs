@@ -1,5 +1,5 @@
 use crate::expr::Expr;
-use crate::token::token_type::Literal;
+use crate::scanner::token_type::Literal;
 
 pub struct PrettyPrinter {
     inner: String,

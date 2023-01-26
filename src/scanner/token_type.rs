@@ -1,8 +1,8 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{write, Display, Formatter};
 use std::str;
 use std::str::FromStr;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TokenType<'token> {
     SingleCharacters(SingleCharacter),
     SingleOrDoubles(SingleOrDouble),
@@ -57,7 +57,7 @@ impl<'token> FromStr for TokenType<'token> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SingleCharacter {
     LeftParen,
     RightParen,
@@ -130,7 +130,7 @@ impl Display for SingleCharacter {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SingleOrDouble {
     Bang,
     BangEqual,
@@ -190,11 +190,14 @@ impl Display for SingleOrDouble {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Literal<'literal> {
     Identifier,
     String(&'literal str),
     Number(NumberType),
+    True,
+    False,
+    Nil,
 }
 
 impl<'literal> Literal<'literal> {
@@ -203,11 +206,14 @@ impl<'literal> Literal<'literal> {
             Literal::Identifier => "identifier".to_string(), // FIXME
             Literal::String(str) => str.to_string(),
             Literal::Number(num) => num.build_string(),
+            Literal::True => true.to_string(),
+            Literal::False => false.to_string(),
+            Literal::Nil => "nil".to_string(),
         }
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum NumberType {
     Integer(i64),
     Float(f64),
@@ -250,11 +256,14 @@ impl<'literal> Display for Literal<'literal> {
             Literal::Identifier => write!(f, "identifier"),
             Literal::String(s) => write!(f, "{}", s),
             Literal::Number(num) => write!(f, "{}", num),
+            Literal::True => write!(f, "true"),
+            Literal::False => write!(f, "false"),
+            Literal::Nil => write!(f, "nil"),
         }
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Keyword {
     And,
     Class,
