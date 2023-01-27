@@ -7,8 +7,8 @@ pub enum Expr<'expr> {
     Binary(Binary<'expr>),
     Call(Call<'expr>),
     Get(Get<'expr>),
-    Grouping(Grouping<'expr>),
-    Literal(Literal<'expr>),
+    Grouping(GroupingExpr<'expr>),
+    Literal(LiteralExpr<'expr>),
     Set(Set<'expr>),
     Super(Super<'expr>),
     This(This<'expr>),
@@ -43,12 +43,12 @@ pub struct Get<'expr> {
 }
 
 #[derive(Clone, Debug)]
-pub struct Grouping<'expr> {
+pub struct GroupingExpr<'expr> {
     pub expression: Box<Expr<'expr>>,
 }
 
 #[derive(Clone, Debug)]
-pub struct Literal<'expr> {
+pub struct LiteralExpr<'expr> {
     pub value: token_type::Literal<'expr>,
 }
 

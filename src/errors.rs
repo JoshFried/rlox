@@ -3,7 +3,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 #[error(transparent)]
-pub struct Error(#[from] ErrorType);
+pub struct Error(#[from] pub ErrorType);
 
 #[derive(Error, Debug)]
 pub enum ErrorType {

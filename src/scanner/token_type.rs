@@ -1,44 +1,44 @@
-use std::fmt::{write, Display, Formatter};
+use std::fmt::{Display, Formatter};
 use std::str;
 use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum TokenType<'token> {
+pub enum TokenType {
     SingleCharacters(SingleCharacter),
     SingleOrDoubles(SingleOrDouble),
-    Literals(Literal<'token>),
     Keywords(Keyword),
+    Identifier,
 }
 
-impl<'token> TokenType<'token> {
+impl TokenType {
     pub fn build_string(&self) -> String {
         match self {
             TokenType::SingleCharacters(token) => token.build_string(),
             TokenType::SingleOrDoubles(token) => token.build_string(),
-            TokenType::Literals(token) => token.build_string(),
             TokenType::Keywords(token) => token.build_string(),
+            TokenType::Identifier => "identifier".to_string(),
         }
     }
 }
 
-impl<'token> TokenType<'token> {
+impl TokenType {
     pub fn is_slash(&self) -> bool {
         matches!(self, TokenType::SingleCharacters(SingleCharacter::Slash))
     }
 }
 
-impl<'token> Display for TokenType<'token> {
+impl Display for TokenType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             TokenType::SingleCharacters(token) => write!(f, "{}", token),
             TokenType::SingleOrDoubles(token) => write!(f, "{}", token),
-            TokenType::Literals(token) => write!(f, "{}", token),
             TokenType::Keywords(token) => write!(f, "{}", token),
+            TokenType::Identifier => write!(f, "identifier"),
         }
     }
 }
 
-impl<'token> FromStr for TokenType<'token> {
+impl FromStr for TokenType {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -49,6 +49,7 @@ impl<'token> FromStr for TokenType<'token> {
         if let Ok(token_type) = SingleOrDouble::from_str(s) {
             return Ok(TokenType::SingleOrDoubles(token_type));
         }
+
         if let Ok(token_type) = Keyword::from_str(s) {
             return Ok(TokenType::Keywords(token_type));
         }
@@ -192,22 +193,18 @@ impl Display for SingleOrDouble {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Literal<'literal> {
-    Identifier,
     String(&'literal str),
     Number(NumberType),
-    True,
-    False,
+    Bool(bool),
     Nil,
 }
 
 impl<'literal> Literal<'literal> {
     pub fn build_string(&self) -> String {
         match self {
-            Literal::Identifier => "identifier".to_string(), // FIXME
             Literal::String(str) => str.to_string(),
             Literal::Number(num) => num.build_string(),
-            Literal::True => true.to_string(),
-            Literal::False => false.to_string(),
+            Literal::Bool(b) => b.to_string(),
             Literal::Nil => "nil".to_string(),
         }
     }
@@ -253,12 +250,10 @@ impl FromStr for NumberType {
 impl<'literal> Display for Literal<'literal> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Literal::Identifier => write!(f, "identifier"),
             Literal::String(s) => write!(f, "{}", s),
             Literal::Number(num) => write!(f, "{}", num),
-            Literal::True => write!(f, "true"),
-            Literal::False => write!(f, "false"),
             Literal::Nil => write!(f, "nil"),
+            Literal::Bool(b) => write!(f, "{}", b),
         }
     }
 }
@@ -282,6 +277,10 @@ pub enum Keyword {
     Var,
     While,
     Eof,
+    String,
+    Integer,
+    Float,
+    Bool,
 }
 
 impl Keyword {
@@ -304,6 +303,10 @@ impl Keyword {
             Keyword::Var => "var".to_string(),
             Keyword::While => "while".to_string(),
             Keyword::Eof => "eof".to_string(),
+            Keyword::String => "string".to_string(),
+            Keyword::Integer => "integer".to_string(),
+            Keyword::Float => "float".to_string(),
+            Keyword::Bool => "bool".to_string(),
         }
     }
 }
@@ -355,6 +358,10 @@ impl Display for Keyword {
             Keyword::Var => write!(f, "var"),
             Keyword::While => write!(f, "while"),
             Keyword::Eof => write!(f, "eof"),
+            Keyword::String => write!(f, "string"),
+            Keyword::Integer => write!(f, "inter"),
+            Keyword::Float => write!(f, "float"),
+            Keyword::Bool => write!(f, "bool"),
         }
     }
 }

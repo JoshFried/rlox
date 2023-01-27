@@ -4,7 +4,7 @@ mod parser;
 mod scanner;
 
 use errors::Error;
-use expr::{Binary, Expr, Literal, Unary};
+use expr::{Binary, Expr, LiteralExpr, Unary};
 use scanner::pretty_printer::PrettyPrinter;
 use scanner::scanner::Scanner;
 use scanner::token_type::NumberType::{Float, Integer};
@@ -31,7 +31,7 @@ fn main() -> Result<()> {
                 None,
                 1,
             ),
-            right: Box::new(Expr::Literal(Literal {
+            right: Box::new(Expr::Literal(LiteralExpr {
                 value: token_type::Literal::Number(Integer(123)),
             })),
         })),
@@ -41,8 +41,8 @@ fn main() -> Result<()> {
             None,
             1,
         ),
-        right: Box::new(Expr::Grouping(expr::Grouping {
-            expression: Box::new(Expr::Literal(Literal {
+        right: Box::new(Expr::Grouping(expr::GroupingExpr {
+            expression: Box::new(Expr::Literal(LiteralExpr {
                 value: token_type::Literal::Number(Float(45.67)),
             })),
         })),

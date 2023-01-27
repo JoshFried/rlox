@@ -2,8 +2,7 @@ use crate::errors::Error;
 use crate::errors::ErrorType::Parse;
 use crate::scanner;
 use crate::scanner::token::Token;
-use crate::scanner::token_type::Literal::{Identifier, Number, String as StringLiteral};
-use crate::scanner::token_type::{Keyword, NumberType, TokenType};
+use crate::scanner::token_type::{Keyword, Literal, NumberType, TokenType};
 use crate::scanner::{CARRIAGE_RETURN, NEW_LINE, PERIOD, QUOTE, SLASH, TAB, WHITE_SPACE};
 use std::str;
 use std::str::FromStr;
@@ -71,7 +70,7 @@ impl<'scanner> Scanner<'scanner> {
                 return Some(());
             }
 
-            self.add_token(token);
+            self.add_token(token, None);
 
             return Some(());
         }
@@ -81,7 +80,7 @@ impl<'scanner> Scanner<'scanner> {
         let token_as_str: &str = str::from_utf8(&token_as_u8).unwrap(); //todo: fix
 
         if let Ok(token) = TokenType::from_str(token_as_str) {
-            self.add_token(token);
+            self.add_token(token, None);
 
             return Some(());
         }
@@ -123,21 +122,28 @@ impl<'scanner> Scanner<'scanner> {
             // TODO: add a logger
             return Err(Error::from(Parse(String::from(
                 "error attempting to parse string literal",
-            )))); //todo: this should return Option<Result<()>> for this exact reason
+            ))));
         }
 
         self.advance();
 
         let result = str::from_utf8(&self.source[self.start + 1..self.current - 1]).unwrap();
-        self.add_token(TokenType::Literals(StringLiteral(result)));
+        self.add_token(
+            TokenType::Keywords(Keyword::String),
+            Some(Literal::String(result)),
+        );
 
         Ok(Some(()))
     }
 
-    fn add_token(&mut self, token: TokenType<'scanner>) {
+    fn add_token(&mut self, token: TokenType, literal: Option<Literal<'_>>) {
         let token = self.build_token(token);
         self.tokens.push(token);
     }
+
+    // fn add_token(&mut self, token: TokenType, literal: TokenLiteral) {
+    //
+    // }
 
     fn advance(&mut self) -> u8 {
         let token = self.source[self.current];
@@ -165,7 +171,7 @@ impl<'scanner> Scanner<'scanner> {
         true
     }
 
-    fn build_token(&self, token: TokenType<'scanner>) -> Token<'scanner> {
+    fn build_token(&self, token: TokenType) -> Token<'scanner> {
         let text = self.get_text();
         Token::new(token, text, None, self.line)
     }
@@ -188,14 +194,20 @@ impl<'scanner> Scanner<'scanner> {
         }
 
         let result = str::from_utf8(&self.source[self.start + 1..self.current - 1]).unwrap();
-        let token = match result.parse::<i64>() {
-            Ok(number) => TokenType::Literals(Number(NumberType::Integer(number))),
-            Err(..) => {
-                TokenType::Literals(Number(NumberType::Float(result.parse::<f64>().unwrap())))
-            }
-        };
 
-        self.add_token(token);
+        match result.parse::<i64>() {
+            Ok(number) => self.add_token(
+                TokenType::Keywords(Keyword::Integer),
+                Some(Literal::Number(NumberType::Integer(number))),
+            ),
+
+            Err(..) => self.add_token(
+                TokenType::Keywords(Keyword::Float),
+                Some(Literal::Number(NumberType::Float(
+                    result.parse::<f64>().unwrap(),
+                ))),
+            ),
+        };
 
         Ok(Some(()))
     }
@@ -215,8 +227,9 @@ impl<'scanner> Scanner<'scanner> {
         let word = self.get_text();
 
         match Keyword::from_str(word) {
-            Ok(keyword) => self.add_token(TokenType::Keywords(keyword)),
-            Err(..) => self.add_token(TokenType::Literals(Identifier)),
+            Ok(keyword) => self.add_token(TokenType::Keywords(keyword), None),
+            // TODO: this might not be the best way to go about it should identifiers really just be wrapped string literals?
+            Err(..) => self.add_token(TokenType::Identifier, Some(Literal::String(word))),
         }
 
         Ok(Some(()))
