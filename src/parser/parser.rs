@@ -219,8 +219,8 @@ impl<'parser> Parser<'parser> {
             .to_owned()
     }
 
-    fn consume(&self, p0: SingleCharacter) -> Result<()> {
-        if self.check(TokenType::SingleCharacters(p0)) {
+    fn consume(&self, token_type: SingleCharacter) -> Result<()> {
+        if self.check(TokenType::SingleCharacters(token_type)) {
             self.advance()?;
 
             return Ok(());

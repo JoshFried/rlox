@@ -136,14 +136,10 @@ impl<'scanner> Scanner<'scanner> {
         Ok(Some(()))
     }
 
-    fn add_token(&mut self, token: TokenType, literal: Option<Literal<'_>>) {
-        let token = self.build_token(token);
+    fn add_token(&mut self, token: TokenType, literal: Option<Literal<'scanner>>) {
+        let token = self.build_token(token, literal);
         self.tokens.push(token);
     }
-
-    // fn add_token(&mut self, token: TokenType, literal: TokenLiteral) {
-    //
-    // }
 
     fn advance(&mut self) -> u8 {
         let token = self.source[self.current];
@@ -171,9 +167,9 @@ impl<'scanner> Scanner<'scanner> {
         true
     }
 
-    fn build_token(&self, token: TokenType) -> Token<'scanner> {
+    fn build_token(&self, token: TokenType, literal: Option<Literal<'scanner>>) -> Token<'scanner> {
         let text = self.get_text();
-        Token::new(token, text, None, self.line)
+        Token::new(token, text, literal, self.line)
     }
 
     fn get_text(&self) -> &'scanner str {
