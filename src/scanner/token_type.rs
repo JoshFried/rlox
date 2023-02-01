@@ -151,7 +151,7 @@ impl SingleOrDouble {
             SingleOrDouble::Equal => "=".to_string(),
             SingleOrDouble::EqualEqual => "==".to_string(),
             SingleOrDouble::Greater => ">".to_string(),
-            SingleOrDouble::GreaterEqual => ">=".to_string(),
+            SingleOrDouble::GreaterEqual => "=>".to_string(),
             SingleOrDouble::Less => "<".to_string(),
             SingleOrDouble::LessEqual => "<=".to_string(),
         }

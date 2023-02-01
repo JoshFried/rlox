@@ -76,15 +76,15 @@ impl<'scanner> Scanner<'scanner> {
             return Some(());
         }
 
-        // TODO: is this safe to do?
-        let token_as_u8 = [token_as_u8[0], self.advance()];
-        let token_as_str: &str = str::from_utf8(&token_as_u8).unwrap(); //todo: fix
-
-        if let Ok(token) = TokenType::from_str(token_as_str) {
-            self.add_token(token, None);
-
-            return Some(());
-        }
+        // // TODO: is this safe to do?
+        // let token_as_u8 = [token_as_u8[0], self.advance()];
+        // let token_as_str: &str = str::from_utf8(&token_as_u8).unwrap(); //todo: fix
+        //
+        // if let Ok(token) = TokenType::from_str(token_as_str) {
+        //     self.add_token(token, None);
+        //
+        //     return Some(());
+        // }
 
         if token_as_u8[0] == QUOTE {
             return match self.handle_string_literal() {
@@ -197,14 +197,17 @@ impl<'scanner> Scanner<'scanner> {
                 TokenType::Keywords(Keyword::Integer),
                 Some(Literal::Number(NumberType::Integer(number))),
             ),
-
-            Err(..) => self.add_token(
-                TokenType::Keywords(Keyword::Float),
-                Some(Literal::Number(NumberType::Float(
-                    result.parse::<f64>().unwrap(),
-                ))),
-            ),
-        };
+            Err(..) => match result.parse::<f64>() {
+                Ok(float) => self.add_token(
+                    TokenType::Keywords(Keyword::Float),
+                    Some(Literal::Number(NumberType::Float(float))),
+                ),
+                Err(_) => {
+                    println!("{}", result);
+                    unimplemented!()
+                }
+            },
+        }
 
         Ok(Some(()))
     }
