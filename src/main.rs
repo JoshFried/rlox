@@ -3,6 +3,7 @@ mod expr;
 mod parser;
 mod scanner;
 
+use crate::parser::parser::Parser;
 use errors::Error;
 use expr::{Binary, Expr, LiteralExpr, Unary};
 use scanner::pretty_printer::PrettyPrinter;
@@ -76,10 +77,10 @@ fn run(line: &str) -> Result<()> {
     let mut scanner = Scanner::new(line.as_bytes());
 
     let tokens = scanner.scan_tokens();
+    let parser = Parser::new(tokens.to_vec());
 
-    for token in tokens {
-        println!("{}", token);
-    }
+    let printer = PrettyPrinter::new();
+    printer.print_expr(&parser.expression()?);
 
     Ok(())
 }

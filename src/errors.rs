@@ -15,4 +15,6 @@ pub enum ErrorType {
     Token(String),
     #[error("io")]
     Io(#[from] io::Error),
+    #[error("Scanner error `{0}`")]
+    Scanner(String),
 }

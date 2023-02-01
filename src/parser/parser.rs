@@ -1,10 +1,12 @@
+use std::cell::RefCell;
+use std::fmt::format;
+use std::rc::Rc;
+
 use crate::errors::ErrorType;
 use crate::expr::{Binary, Expr, GroupingExpr, LiteralExpr, Unary};
 use crate::scanner::token::Token;
 use crate::scanner::token_type::{Keyword, Literal, SingleCharacter, SingleOrDouble, TokenType};
 use crate::Result;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 pub struct Parser<'parser> {
     tokens: Rc<RefCell<Vec<Token<'parser>>>>,
@@ -51,7 +53,6 @@ impl<'parser> Parser<'parser> {
         while self.does_match(Vec::from(EQUALITY_MATCH)) {
             let operator = self.previous();
             let right = self.comparison()?;
-
             expr = Expr::Binary(Binary {
                 left: Box::new(expr),
                 operator,
@@ -178,15 +179,16 @@ impl<'parser> Parser<'parser> {
             SingleCharacter::LeftParen,
         )]) {
             let expr = self.expression()?;
-            self.consume(SingleCharacter::RightParen)?;
+
+            self.consume(SingleCharacter::RightParen, r"Expect ')' after expression")?;
 
             return Ok(Expr::Grouping(GroupingExpr {
                 expression: Box::new(expr),
             }));
         }
 
-        Err(crate::errors::Error(ErrorType::Interpreter(String::from(
-            "error matching token",
+        Err(crate::errors::Error(ErrorType::Parse(String::from(
+            "Expected expression.",
         ))))
     }
 
@@ -219,15 +221,43 @@ impl<'parser> Parser<'parser> {
             .to_owned()
     }
 
-    fn consume(&self, token_type: SingleCharacter) -> Result<()> {
+    fn consume(&self, token_type: SingleCharacter, message: &str) -> Result<()> {
         if self.check(TokenType::SingleCharacters(token_type)) {
             self.advance()?;
 
             return Ok(());
         }
 
-        Err(crate::errors::Error(ErrorType::Interpreter(String::from(
-            "error while consuming",
+        Err(crate::errors::Error(ErrorType::Parse(String::from(
+            self.build_parser_error_msg(message),
         ))))
+    }
+
+    fn build_parser_error_msg(&self, message: &str) -> String {
+        let token = self.peek();
+        match token.token_type() {
+            TokenType::Keywords(Keyword::Eof) => format!("{} at end {}", token.line(), message),
+            _ => format!("{} at {} {}", token.line(), token.lexeme(), message),
+        }
+    }
+
+    fn synchronize(&self) -> Result<()> {
+        self.advance()?;
+
+        while !self.is_end() {
+            if self.previous().token_type()
+                == TokenType::SingleCharacters(SingleCharacter::Semicolon)
+            {
+                return Ok(());
+            }
+
+            if let TokenType::Keywords(_) = self.peek().token_type() {
+                return Ok(());
+            };
+
+            self.advance()?;
+        }
+
+        Ok(())
     }
 }

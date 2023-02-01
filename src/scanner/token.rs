@@ -42,4 +42,16 @@ impl<'token> Token<'token> {
     pub fn literal(&self) -> Option<Literal<'token>> {
         self.literal
     }
+
+    pub fn line(&self) -> usize {
+        self.line
+    }
+
+    pub fn token_type(&self) -> TokenType {
+        self.token_type
+    }
+
+    pub fn lexeme(&self) -> &'token str {
+        self.lexeme
+    }
 }

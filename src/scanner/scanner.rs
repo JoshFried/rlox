@@ -1,5 +1,5 @@
 use crate::errors::Error;
-use crate::errors::ErrorType::Parse;
+use crate::errors::ErrorType::{Parse, Scanner as ScannerError};
 use crate::scanner;
 use crate::scanner::token::Token;
 use crate::scanner::token_type::{Keyword, Literal, NumberType, TokenType};
@@ -28,7 +28,9 @@ impl<'scanner> Scanner<'scanner> {
 
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
         //TODO: theres gotta be a better way....
-        while let Some(..) = self.scan_token() {}
+        while self.scan_token().is_some() {
+            self.start = self.current;
+        }
 
         self.tokens.push(Token::new(
             TokenType::from_str("eof").unwrap(), // safe cause we know eof is a valid from_str
@@ -65,9 +67,8 @@ impl<'scanner> Scanner<'scanner> {
                     while self.peek() != NEW_LINE && !self.is_end() {
                         self.advance();
                     }
+                    return Some(());
                 }
-
-                return Some(());
             }
 
             self.add_token(token, None);
@@ -119,8 +120,7 @@ impl<'scanner> Scanner<'scanner> {
         }
 
         if self.is_end() {
-            // TODO: add a logger
-            return Err(Error::from(Parse(String::from(
+            return Err(Error::from(ScannerError(String::from(
                 "error attempting to parse string literal",
             ))));
         }
@@ -150,10 +150,11 @@ impl<'scanner> Scanner<'scanner> {
 
     fn peek(&self) -> u8 {
         match self.is_end() {
-            true => 0,
+            true => b'\0',
             false => self.source[self.current],
         }
     }
+
     fn match_token(&mut self, token: u8) -> bool {
         if self.is_end() {
             return false;
@@ -189,7 +190,7 @@ impl<'scanner> Scanner<'scanner> {
             }
         }
 
-        let result = str::from_utf8(&self.source[self.start + 1..self.current - 1]).unwrap();
+        let result = str::from_utf8(&self.source[self.start..self.current]).unwrap();
 
         match result.parse::<i64>() {
             Ok(number) => self.add_token(
